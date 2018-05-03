@@ -50,20 +50,13 @@ function StringRep(props) {
   let text = object;
 
   const isLong = isLongString(object);
-  const isOpen = member && member.open;
-  const shouldCrop = !isOpen && cropLimit && text.length > cropLimit;
+  const shouldCrop = shouldCropText(text, cropLimit, member);
 
   if (isLong) {
-    text = maybeCropLongString(
-      {
-        shouldCrop,
-        cropLimit
-      },
-      text
-    );
+    text = maybeCropLongString(text, cropLimit, member);
 
     const { fullText } = object;
-    if (isOpen && fullText) {
+    if (memberIsOpen(member) && fullText) {
       text = fullText;
     }
   }
@@ -91,25 +84,26 @@ function StringRep(props) {
     }
 
     // Cropping of longString has been handled before formatting.
-    text = maybeCropString(
-      {
-        isLong,
-        shouldCrop,
-        cropLimit
-      },
-      text
-    );
+    text = maybeCropString(text, cropLimit, member);
   }
 
   return span(config, text);
 }
 
-function maybeCropLongString(opts, text) {
-  const { shouldCrop, cropLimit } = opts;
+function memberIsOpen(member) {
+  return member && member.open;
+}
 
+function shouldCropText(text, cropLimit, member) {
+  return !memberIsOpen(member) && cropLimit && text.length > cropLimit;
+}
+
+function maybeCropLongString(text, cropLimit, member) {
   const { initial, length } = text;
 
-  text = shouldCrop ? initial.substring(0, cropLimit) : initial;
+  text = shouldCropText(text, cropLimit, member)
+    ? initial.substring(0, cropLimit)
+    : initial;
 
   if (text.length < length) {
     text += ELLIPSIS;
@@ -148,10 +142,10 @@ function getElementConfig(opts) {
   return config;
 }
 
-function maybeCropString(opts, text) {
-  const { shouldCrop, cropLimit } = opts;
-
-  return shouldCrop ? rawCropString(text, cropLimit) : text;
+function maybeCropString(text, cropLimit, member) {
+  return shouldCropText(text, cropLimit, member)
+    ? rawCropString(text, cropLimit)
+    : text;
 }
 
 /**
