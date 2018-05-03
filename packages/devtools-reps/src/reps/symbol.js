@@ -3,9 +3,12 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 // Dependencies
+
 const PropTypes = require("prop-types");
 
 const { getGripType, wrapRender } = require("./rep-utils");
+const { isLongString, maybeCropLongString } = require("./string");
+// const { getRep } = require("./rep");
 
 const dom = require("react-dom-factories");
 const { span } = dom;
@@ -26,8 +29,16 @@ function SymbolRep(props) {
       className,
       "data-link-actor-id": object.actor
     },
-    `Symbol(${name || ""})`
+    `Symbol(${formatName(name) || ""})`
   );
+}
+
+function formatName(name) {
+  if (isLongString(name)) {
+    return maybeCropLongString(name, 100, false);
+  }
+
+  return name;
 }
 
 function supportsObject(object, noGrip = false) {
